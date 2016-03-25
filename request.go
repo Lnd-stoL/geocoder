@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+    "net/url"
 
 	"github.com/tonnerre/golang-pretty"
 )
@@ -86,12 +87,11 @@ func (r *requestBody) SetLang(lang string) {
 }
 
 func (r *requestBody) sendRequest() ymaps {
-
-	url := fmt.Sprintf(
+	r_url := fmt.Sprintf(
 		"https://geocode-maps.yandex.ru/1.x/?geocode=%s&apikey=%s&sco=%s&kind=%s&format=%s&ll=%s&spn=%s&rspn=%d&results=%d&skip=%d&lang=%s&key=%s",
-		r.geocode, r.apikey, r.sco, r.kind, r.format, r.ll, r.spn, r.rspn, r.results, r.skip, r.lang, r.key)
-	fmt.Println(url)
-	httpResp, err := http.Get(url)
+        url.QueryEscape(r.geocode), r.apikey, r.sco, r.kind, r.format, r.ll, r.spn, r.rspn, r.results, r.skip, r.lang, r.key)
+	//fmt.Println(url)
+	httpResp, err := http.Get(r_url)
 	if err != nil {
 		panic(err)
 	}
@@ -106,11 +106,14 @@ func (r *requestBody) sendRequest() ymaps {
 }
 
 //FindOne send request to server and retern only one result.
-func FindOne(requestString string) GeoObject {
+func FindOne(requestString string) *GeoObject {
 	request := requestBody{geocode: requestString, results: 1}
 	response := request.sendRequest()
-	fmt.Printf("%# v", pretty.Formatter(response.GeoObjectCollection.FeatureMembers[0].GeoObject))
-	return response.GeoObjectCollection.FeatureMembers[0].GeoObject
+	//fmt.Printf("%# v", pretty.Formatter(response.GeoObjectCollection.FeatureMembers[0].GeoObject))
+    if len(response.GeoObjectCollection.FeatureMembers) == 0 {
+        return nil
+    }
+	return &response.GeoObjectCollection.FeatureMembers[0].GeoObject
 }
 
 //Find send request to server and retern results. Argument maxResults set maximum number of results.
@@ -121,7 +124,7 @@ func Find(requestString string, maxResults int) []GeoObject {
 	for _, item := range response.GeoObjectCollection.FeatureMembers {
 		result = append(result, item.GeoObject)
 	}
-	fmt.Printf("%# v", pretty.Formatter(result))
+	//fmt.Printf("%# v", pretty.Formatter(result))
 	return result
 }
 

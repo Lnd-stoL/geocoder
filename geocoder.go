@@ -12,7 +12,7 @@ func New() *GeoCoder {
 }
 
 //FindOne send request to server and retern only one result.
-func (g GeoCoder) FindOne(requestString string) GeoObject {
+func (g GeoCoder) FindOne(requestString string) *GeoObject {
 	return FindOne(requestString)
 }
 
